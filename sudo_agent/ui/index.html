@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>SUDO</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/ui/app.css">
+</head>
+<body>
+<div class="app">
+  <nav class="rail" aria-label="Sections">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 28 28" width="28" height="28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="#2F6FED"/><path d="m8.5 10 5 4-5 4M15 19h5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>SUDO</span>
+    </div>
+    <div class="tabs">
+      <button class="tab" data-view="operate" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg><span>Operate</span></button>
+      <button class="tab" data-view="tasks"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Tasks</span></button>
+      <button class="tab" data-view="memory"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg><span>Memory</span></button>
+      <button class="tab" data-view="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg><span>Settings</span></button>
+    </div>
+    <div class="link-state" id="link" role="status" data-state="connecting">connecting</div>
+  </nav>
+
+  <main class="view" id="view-operate">
+    <section class="chat" aria-label="Conversation">
+      <header class="topbar">
+        <span class="dot" id="dot" aria-hidden="true"></span>
+        <span class="status-text" id="status" role="status">Idle</span>
+        <span class="spacer"></span>
+        <button class="ghost compact side-toggle" id="side-toggle" aria-controls="side" aria-expanded="false">Activity</button>
+        <button class="ghost compact" id="pause" disabled>Pause</button>
+        <button class="stop compact" id="stop" disabled>Stop</button>
+      </header>
+
+      <div class="log" id="log" role="log" aria-live="polite">
+        <div class="empty" id="empty">
+          <h1>What do you need done?</h1>
+          <p>Describe it in plain words. SUDO works on this computer, checks the result, and asks you before anything final.</p>
+          <div class="suggestions" id="suggestions">
+            <button type="button" class="suggestion">Find out why my computer is slow and fix it</button>
+            <button type="button" class="suggestion">Open my Gmail in my browser and summarize unread emails</button>
+            <button type="button" class="suggestion">Organize my Downloads folder by file type</button>
+            <button type="button" class="suggestion">Research the best laptops under ₹60,000 and write a report</button>
+          </div>
+        </div>
+      </div>
+
+      <form class="composer" id="composer">
+        <div class="composer-box">
+          <label class="sr" for="input">Command</label>
+          <textarea id="input" rows="1" placeholder="Tell SUDO what to do…" autocomplete="off" spellcheck="true"></textarea>
+          <div class="composer-row">
+            <div class="modes" id="mode-box" hidden>
+              <label for="mode">While a task runs</label>
+              <select id="mode">
+                <option value="auto">Update this task</option>
+                <option value="queue">Do it next</option>
+                <option value="urgent">Do it now</option>
+              </select>
+            </div>
+            <span class="spacer"></span>
+            <button type="button" class="ghost compact voice" id="voice" aria-pressed="false">Voice</button>
+            <button type="submit" class="primary compact" id="send">Run</button>
+          </div>
+        </div>
+        <p class="hint">Press Ctrl+Alt+Q from anywhere to stop SUDO.</p>
+      </form>
+    </section>
+
+    <aside class="side" id="side" aria-label="Live activity">
+      <div class="side-head">
+        <h2>Activity</h2>
+        <button class="link" id="side-close">Close</button>
+      </div>
+      <section class="card">
+        <div class="card-head">
+          <h2>Progress</h2>
+          <span class="phase-label" id="phase-label">Ready</span>
+        </div>
+        <ol class="phases" id="phases" aria-label="Workflow stage"></ol>
+        <p class="now" id="now"></p>
+        <ul class="agents" id="agents" aria-label="Which agent is working"></ul>
+      </section>
+      <section class="card" id="plan-panel" hidden>
+        <div class="card-head"><h2>Plan</h2></div>
+        <ol class="plan" id="plan"></ol>
+      </section>
+      <section class="card">
+        <div class="card-head">
+          <h2>Screen</h2>
+          <button class="link" id="refresh-screen">Refresh</button>
+        </div>
+        <div class="screen" id="screen-box"><p id="screen-empty">SUDO's latest view appears here.</p><img id="screen" alt="Latest view of the screen" hidden></div>
+      </section>
+      <section class="card grow">
+        <div class="card-head"><h2>Actions</h2></div>
+        <ol class="actions" id="actions"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <main class="view page" id="view-tasks" hidden>
+    <div class="page-inner">
+      <h1>Tasks</h1>
+      <p class="sub">Everything SUDO has been asked to do, with the steps it took.</p>
+      <div id="task-list" class="list"></div>
+    </div>
+  </main>
+
+  <main class="view page" id="view-memory" hidden>
+    <div class="page-inner">
+      <h1>Memory</h1>
+      <p class="sub">What SUDO keeps between tasks. You can edit or delete anything here. Passwords and keys are refused.</p>
+      <form id="memory-form" class="row-form">
+        <label class="sr" for="m-kind">Type</label><select id="m-kind"></select>
+        <label class="sr" for="m-title">Title</label><input id="m-title" placeholder="Title" required>
+        <label class="sr" for="m-content">Content</label><input id="m-content" class="wide" placeholder="What to remember" required>
+        <button class="primary">Add</button>
+      </form>
+      <p class="form-error" id="memory-error" role="alert"></p>
+      <div id="memory-list" class="list"></div>
+    </div>
+  </main>
+
+  <main class="view page" id="view-settings" hidden>
+    <div class="page-inner">
+      <h1>Settings</h1>
+      <p class="sub">Choose the AI, decide what SUDO may do, and link your own browser.</p>
+      <form id="settings-form" class="settings">
+        <fieldset>
+          <legend>AI model</legend>
+          <label>Provider
+            <select name="provider"><option value="anthropic">Anthropic</option><option value="openai">OpenAI-compatible</option></select></label>
+          <label>Model <input name="model" list="model-list" spellcheck="false"><datalist id="model-list"></datalist></label>
+          <label>Effort
+            <select name="effort"><option>low</option><option>medium</option><option>high</option><option>xhigh</option><option>max</option></select></label>
+          <label>Base URL <input name="openai_base_url" spellcheck="false" placeholder="Only for Groq, OpenRouter or a local model"></label>
+          <label class="check"><input type="checkbox" name="vision"> Send screenshots to the model</label>
+        </fieldset>
+        <fieldset>
+          <legend>Behaviour</legend>
+          <label>Autonomy
+            <select name="autonomy">
+              <option value="balanced">Balanced: asks before risky or final actions</option>
+              <option value="cautious">Cautious: also asks before any command not known to be read-only</option>
+            </select></label>
+          <label>Most steps per task <input name="max_steps" type="number" min="1" max="500"></label>
+          <label>Browser
+            <select name="browser"><option value="chrome">Chrome</option><option value="edge">Edge</option><option value="brave">Brave</option></select></label>
+          <label class="check"><input type="checkbox" name="auto_resume"> Carry on by itself after a crash (you get 8 seconds to say stop)</label>
+        </fieldset>
+        <fieldset id="permissions">
+          <legend>Permissions for each agent</legend>
+          <p class="sub">Normal asks before risky or final actions. Ask every time also asks before each change. Off refuses that agent's actions. Safety limits always apply.</p>
+        </fieldset>
+        <div class="settings-actions"><button class="primary">Save changes</button><span id="settings-note" role="status"></span></div>
+      </form>
+      <form id="key-form" class="settings">
+        <fieldset>
+          <legend>API key</legend>
+          <p class="sub">Stored in Windows Credential Manager, never in a file or a log. <span id="key-state"></span></p>
+          <label>Key for the selected provider <input id="key" type="password" autocomplete="off"></label>
+        </fieldset>
+        <div class="settings-actions"><button class="primary">Save key</button><button type="button" class="ghost" id="key-delete">Remove key</button></div>
+      </form>
+      <section class="settings">
+        <fieldset>
+          <legend>Your own browser</legend>
+          <p class="sub" id="ext-state" role="status"></p>
+          <ol class="ext-steps">
+            <li>In Chrome, go to <code>chrome://extensions</code> and turn on Developer mode.</li>
+            <li>Press Load unpacked and choose <code id="ext-folder"></code></li>
+            <li>Open the SUDO Browser Link icon, then paste this code and port <code id="ext-port"></code></li>
+          </ol>
+          <label>Pairing code <input id="ext-code" readonly></label>
+          <div class="settings-actions"><button type="button" class="ghost compact" id="ext-copy">Copy code</button><span id="ext-copied" role="status"></span></div>
+          <p class="sub">SUDO can then use your open tabs and logged-in accounts. Your browser shows a bar while SUDO is controlling a tab. Approvals still apply. To cut the link, remove the extension.</p>
+        </fieldset>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="d-title" aria-describedby="d-body">
+    <p class="eyebrow" id="d-kind"></p>
+    <h2 id="d-title"></h2>
+    <p id="d-body"></p>
+    <dl id="d-detail" hidden></dl>
+    <form id="d-form">
+      <label class="sr" for="d-input">Your answer</label>
+      <input id="d-input" autocomplete="off" hidden>
+      <div class="dialog-actions">
+        <button type="button" class="ghost" id="d-no"></button>
+        <button class="primary" id="d-yes"></button>
+      </div>
+    </form>
+  </div>
+</div>
+<script src="/ui/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Form</title></head><body>
+<h2>Your details</h2>
+<label>Contact number <input id="phone" type="tel"></label>
+<p><button type="button" id="next" onclick="document.getElementById('step').textContent = 'step 2: ' + event.isTrusted">Continue</button></p>
+<p id="step">step 1</p>
+<div id="host"></div>
+<script>
+  const root = document.getElementById("host").attachShadow({ mode: "open" });
+  root.innerHTML = '<label>Nickname <input id="nick"></label>';
+</script>
+</body></html>

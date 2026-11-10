@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "SUDO Browser Link",
+  "version": "0.2.0",
+  "description": "Lets your local SUDO app operate this browser. Connects only to SUDO on this PC, using your pairing code.",
+  "permissions": ["tabs", "scripting", "debugger", "storage", "alarms", "webNavigation"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "SUDO Browser Link", "default_popup": "popup.html" }
+}
